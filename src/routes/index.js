@@ -3,11 +3,6 @@ const router = express.Router();
 const Funcionario = require("../models/funcionario");
 const Ponto = require("../models/ponto");
 
-router.get("/funcionarios", async (req, res) => {
-  const funcionarios = await Funcionario.find();
-  res.json(funcionarios);
-});
-
 router.post("/funcionario", async (req, res) => {
   const { nome, cpf, email, senha } = JSON.parse(req.body.data);
   const funcionario = new Funcionario({ nome, cpf, email, senha });
@@ -23,46 +18,23 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.put("/funcionario/:id", async (req, res) => {
-  const funcionario = await Funcionario.findByIdAndUpdate(
-    req.params.id,
-    req.body,
-    {
-      new: true,
-    }
-  );
-  res.json(funcionario);
-});
-
 router.delete("/funcionario/:id", async (req, res) => {
   const funcionario = await Funcionario.findByIdAndDelete(req.params.id);
   res.json({ message: "Funcionário excluído com sucesso", funcionario });
 });
+
 router.delete("/ponto/:id", async (req, res) => {
   const ponto = await Ponto.findByIdAndDelete(req.params.id);
   res.json({ message: "Ponto excluído com sucesso", ponto });
 });
 
+//USA ESSE
 router.post("/ponto/:id", async (req, res) => {
   const funcionarioId = req.params.id;
   console.log(funcionarioId);
   const { entrada, saida } = req.body;
   Funcionario.findById(funcionarioId)
     .then(async (funcionario) => {
-      // Verificar se o funcionário já registrou sua entrada hoje
-      const pontoAnterior = await Ponto.findOne({
-        funcionario,
-        entrada: {
-          $gte: new Date().setHours(0, 0, 0, 0),
-          $lt: new Date().setHours(23, 59, 59, 999),
-        },
-      });
-      if (pontoAnterior && !pontoAnterior.saida) {
-        return res
-          .status(400)
-          .json({ message: "Você já registrou sua entrada hoje" });
-      }
-
       const ponto = new Ponto({
         funcionario,
         entrada: new Date(entrada),
@@ -78,7 +50,7 @@ router.post("/ponto/:id", async (req, res) => {
     })
     .catch((e) => console.log(e));
 });
-
+///USA ESSE
 router.get("/funcionario/:id/pontos", async (req, res) => {
   const funcionarioId = req.params.id;
   Funcionario.findById(funcionarioId)
